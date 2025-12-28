@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXIF Border Generator</title>
+<script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Poppins:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;500;700&family=Raleway:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Disable text selection and cursor */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  box-sizing: border-box;
+  cursor: default;
+}
+
+/* Enable text selection only for input elements */
+input, select, textarea, button {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  cursor: auto;
+}
+
+/* Remove focus outlines for non-interactive elements */
+canvas:focus, div:focus, span:focus {
+  outline: none;
+}
+
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #000000;
+  --accent: #e2e8f0;
+  --primary: #000000;
+  --primary-light: #eff6ff;
+  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  --radius: 16px;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --accent: #334155;
+  --primary: #ffffff;
+  --primary-light: rgba(255, 255, 255, 0.2);
+  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: var(--transition);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+.wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 0;
+  background: linear-gradient(135deg, var(--primary) 0%, #929292 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+  display: inline-block;
+}
+
+h1::after {
+  content: '';
+  position: absolute;
+  width: 40%;
+  height: 4px;
+  bottom: -6px;
+  left: 0;
+  background: linear-gradient(90deg, var(--primary)0%, #000000 100%);
+  border-radius: 2px;
+}
+
+.theme-toggle {
+  background: var(--card);
+  border: 1.5px solid var(--accent);
+  color: var(--text);
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.theme-toggle::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z'/%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+[data-theme="dark"] .theme-toggle::before {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z' clip-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2.5rem;
+  transition: var(--transition);
+  border: 1px solid transparent;
+}
+
+.card:hover {
+  border-color: var(--primary-light);
+}
+
+.upload-area {
+  border: 2px dashed var(--accent);
+  border-radius: 12px;
+  padding: 4rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 2.5rem;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  background: var(--primary-light);
+}
+
+.upload-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.05), transparent);
+  transition: left 0.6s ease;
+}
+
+.upload-area:hover::before {
+  left: 100%;
+}
+
+.upload-area:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.upload-area.dragover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  transform: scale(1.01);
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.upload-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.upload-subtext {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.control-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.control-value {
+  font-size: 0.75rem;
+  color: var(--primary);
+  font-weight: 600;
+  background: var(--primary-light);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--accent);
+  border-radius: 50px;
+  padding: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 60px;
+  height: 32px;
+  position: relative;
+}
+
+.toggle-switch.active {
+  background: var(--primary);
+}
+
+.toggle-switch::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  background: var(--card);
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle-switch.active::before {
+  transform: translateX(28px);
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggle-text {
+  font-size: 0.875rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--accent);
+  outline: none;
+  -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 3px solid var(--card);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: var(--transition);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+input[type="color"] {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+  border: 2px solid var(--accent);
+  background: transparent;
+  cursor: pointer;
+  padding: 2px;
+  transition: var(--transition);
+}
+
+input[type="color"]:hover {
+  border-color: var(--primary);
+}
+
+select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 2px solid var(--accent);
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+}
+
+select:hover {
+  border-color: var(--primary);
+}
+
+select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.font-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.font-option {
+  flex: 1;
+  min-width: 120px;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.filter-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 0.5rem;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.filter-btn:hover {
+  background: var(--primary-light);
+}
+
+.filter-btn.active {
+  background: var(--primary);
+  color: rgb(0, 0, 0);
+}
+
+.preview-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 2.5rem 0;
+  position: relative;
+  transition: var(--transition);
+}
+
+.canvas-container {
+  position: relative;
+  max-width: 680px;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  transition: var(--transition);
+}
+
+.canvas-container.portrait-preview {
+  max-width: 480px;
+}
+
+.canvas-container.no-exif {
+  max-height: none; /* Remove fixed height to prevent cutting */
+}
+
+.canvas-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(247, 246, 246, 0.1);
+  pointer-events: none;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #f1f5f9;
+}
+
+/* SIMPLIFIED DOWNLOAD BUTTON */
+.download-btn {
+  display: block;
+  margin: 0 auto;
+  padding: 1rem 2.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  background: var(--primary);
+  color: var(--bg);
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  min-width: 200px;
+  letter-spacing: 0.5px;
+}
+
+.download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.download-btn:active {
+  transform: translateY(0);
+}
+
+.download-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Light mode specific button styles */
+[data-theme="light"] .download-btn {
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+}
+
+[data-theme="light"] .download-btn:hover {
+  background: #333333;
+  border-color: #333333;
+}
+
+/* Dark mode specific button styles */
+[data-theme="dark"] .download-btn {
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #ffffff;
+}
+
+[data-theme="dark"] .download-btn:hover {
+  background: #e0e0e0;
+  border-color: #e0e0e0;
+}
+
+footer {
+  text-align: center;
+  margin-top: 3rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* Font preview styling */
+.font-preview {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Image orientation indicator */
+.orientation-indicator {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  transition: var(--transition);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 1.5rem 1rem;
+  }
+  
+  .card {
+    padding: 1.5rem;
+  }
+  
+  .upload-area {
+    padding: 3rem 1rem;
+  }
+  
+  .controls-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .font-option {
+    min-width: 100%;
+  }
+  
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .theme-toggle {
+    align-self: flex-start;
+  }
+  
+  .canvas-container.portrait-preview {
+    max-width: 100%;
+  }
+  
+  .canvas-container.no-exif {
+    max-height: none;
+  }
+  
+  .filter-btn {
+    min-width: 70px;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .download-btn {
+    padding: 0.875rem 2rem;
+    min-width: 180px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .canvas-container {
+    max-width: 100%;
+  }
+  
+  .filter-options {
+    gap: 0.25rem;
+  }
+  
+  .filter-btn {
+    min-width: 60px;
+    padding: 0.35rem;
+    font-size: 0.65rem;
+  }
+  
+  .download-btn {
+    padding: 0.75rem 1.5rem;
+    min-width: 160px;
+    font-size: 0.9rem;
+  }
+}
+</style>
+</head>
+
+<body data-theme="light">
+
+<div class="wrapper">
+
+<header>
+  <div>
+    <h1>EXIF Border Generator</h1>
+    <p style="color: var(--muted); margin-top: 0.5rem;">Add beautiful borders with camera metadata to your photos</p>
+  </div>
+  <button class="theme-toggle" id="themeToggle">Dark Mode</button>
+</header>
+
+<div class="card">
+
+  <div class="upload-area" id="upload">
+    <div class="upload-icon">📷</div>
+    <div class="upload-text">Upload Your Photo</div>
+    <div class="upload-subtext">Click or drag & drop an image to get started</div>
+    <input type="file" id="fileInput" accept="image/*" hidden>
+  </div>
+
+  <div class="controls-grid">
+    <div class="control-group">
+      <div class="control-label">
+        <span>Font Family <span id="orientationIndicator" class="orientation-indicator" style="display: none;">Portrait</span></span>
+        <span class="control-value" id="fontFamilyValue">Inter</span>
+      </div>
+      <div class="font-options">
+        <div class="font-option">
+          <select id="fontFamily">
+            <option value="Inter">Inter (Modern Sans)</option>
+            <option value="Roboto">Roboto (Clean Sans)</option>
+            <option value="Poppins">Poppins (Geometric Sans)</option>
+            <option value="Montserrat">Montserrat (Elegant Sans)</option>
+            <option value="Open Sans">Open Sans (Friendly Sans)</option>
+            <option value="Playfair Display">Playfair Display (Elegant Serif)</option>
+            <option value="Lato">Lato (Corporate Sans)</option>
+            <option value="Raleway">Raleway (Stylish Sans)</option>
+            <option value="Source Sans Pro">Source Sans Pro (Professional Sans)</option>
+            <option value="Noto Sans">Noto Sans (Universal Sans)</option>
+          </select>
+        </div>
+      </div>
+      <div class="font-preview" id="fontPreview">The quick brown fox jumps over the lazy dog</div>
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <div class="toggle-label">
+          <span>Show EXIF Data</span>
+        </div>
+        <div class="toggle-switch active" id="exifToggle">
+        </div>
+      </div>
+      <div style="font-size: 0.75rem; color: var(--muted);">Toggle to show/hide camera settings</div>
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Image Filter</span>
+        <span class="control-value" id="filterValue">None</span>
+      </div>
+      <div class="filter-options">
+        <button class="filter-btn active" data-filter="none">None</button>
+        <button class="filter-btn" data-filter="grayscale">B&W</button>
+        <button class="filter-btn" data-filter="sepia">Sepia</button>
+        <button class="filter-btn" data-filter="vintage">Vintage</button>
+        <button class="filter-btn" data-filter="cool">Cool</button>
+        <button class="filter-btn" data-filter="warm">Warm</button>
+        <button class="filter-btn" data-filter="high-contrast">Contrast</button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Font Size</span>
+        <span class="control-value" id="fontScaleValue">1.0</span>
+      </div>
+      <input type="range" id="fontScale" min="0.6" max="1.4" step="0.05" value="1">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Line Spacing</span>
+        <span class="control-value" id="lineSpacingValue">0.65</span>
+      </div>
+      <input type="range" id="lineSpacing" min="0.5" max="1.0" step="0.05" value="0.65">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Border Size</span>
+        <span class="control-value" id="borderSizeValue">4%</span>
+      </div>
+      <input type="range" id="borderSize" min="0.02" max="0.10" step="0.005" value="0.04">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Border Color</span>
+        <span class="control-value" id="borderColorValue">#FFFFFF</span>
+      </div>
+      <input type="color" id="borderColor" value="#ffffff">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Text Color</span>
+        <span class="control-value" id="textColorValue">#111111</span>
+      </div>
+      <input type="color" id="textColor" value="#111111">
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="previewCanvas"></canvas>
+    </div>
+  </div>
+
+  <button class="download-btn" id="downloadBtn" disabled>
+    <span>Download Full Resolution</span>
+  </button>
+
+</div>
+
+<footer>
+  <p>•By: Leonard Bruno • EXIF Border Generator • Add professional camera metadata borders to your photos</p>
+</footer>
+
+</div>
+
+<script>
+class EXIFBorderApp {
+  constructor() {
+    this.previewCanvas = document.getElementById("previewCanvas");
+    this.previewCtx = this.previewCanvas.getContext("2d");
+    this.canvasContainer = document.getElementById("canvasContainer");
+    this.orientationIndicator = document.getElementById("orientationIndicator");
+    this.exifToggle = document.getElementById("exifToggle");
+    this.filterValue = document.getElementById("filterValue");
+    this.filterButtons = document.querySelectorAll('.filter-btn');
+
+    this.exportCanvas = document.createElement("canvas");
+    this.exportCtx = this.exportCanvas.getContext("2d");
+
+    this.upload = document.getElementById("upload");
+    this.input = document.getElementById("fileInput");
+    this.downloadBtn = document.getElementById("downloadBtn");
+
+    this.fontFamilyEl = document.getElementById("fontFamily");
+    this.fontScaleEl = document.getElementById("fontScale");
+    this.lineSpacingEl = document.getElementById("lineSpacing");
+    this.borderSizeEl = document.getElementById("borderSize");
+    this.borderColorEl = document.getElementById("borderColor");
+    this.textColorEl = document.getElementById("textColor");
+    
+    // Value display elements
+    this.fontPreview = document.getElementById("fontPreview");
+    this.fontFamilyValue = document.getElementById("fontFamilyValue");
+    this.fontScaleValue = document.getElementById("fontScaleValue");
+    this.lineSpacingValue = document.getElementById("lineSpacingValue");
+    this.borderSizeValue = document.getElementById("borderSizeValue");
+    this.borderColorValue = document.getElementById("borderColorValue");
+    this.textColorValue = document.getElementById("textColorValue");
+
+    this.image = null;
+    this.filteredImage = null;
+    this.exif = null;
+    this.renderQueued = false;
+    this.isPortrait = false;
+    this.showExif = true;
+    this.currentFilter = 'none';
+
+    this.initUpload();
+    this.bindControls();
+    this.initTheme();
+    this.updateControlValues();
+    this.updateFontPreview();
+  }
+
+  initTheme() {
+    const toggle = document.getElementById("themeToggle");
+    toggle.onclick = () => {
+      const root = document.body;
+      const dark = root.dataset.theme === "dark";
+      root.dataset.theme = dark ? "light" : "dark";
+      toggle.textContent = dark ? "Dark Mode" : "Light Mode";
+    };
+  }
+
+  initUpload() {
+    this.upload.onclick = () => this.input.click();
+
+    ["dragenter","dragover"].forEach(e =>
+      this.upload.addEventListener(e, ev => {
+        ev.preventDefault();
+        this.upload.classList.add("dragover");
+      })
+    );
+
+    ["dragleave","drop"].forEach(e =>
+      this.upload.addEventListener(e, ev => {
+        ev.preventDefault();
+        this.upload.classList.remove("dragover");
+      })
+    );
+
+    this.upload.addEventListener("drop", e => {
+      const file = e.dataTransfer.files[0];
+      if (file?.type.startsWith("image")) this.loadImage(file);
+    });
+
+    this.input.onchange = e => this.loadImage(e.target.files[0]);
+  }
+
+  bindControls() {
+    // EXIF toggle
+    this.exifToggle.onclick = () => {
+      this.showExif = !this.showExif;
+      this.exifToggle.classList.toggle("active");
+      this.queueRender();
+    };
+
+    // Filter buttons
+    this.filterButtons.forEach(btn => {
+      btn.onclick = (e) => {
+        const filter = e.target.dataset.filter;
+        this.setFilter(filter);
+      };
+    });
+
+    // Update font preview when font changes
+    this.fontFamilyEl.onchange = () => {
+      this.updateControlValues();
+      this.updateFontPreview();
+      this.queueRender();
+    };
+    
+    [this.fontScaleEl, this.lineSpacingEl, this.borderSizeEl, this.borderColorEl, this.textColorEl]
+      .forEach(el => {
+        el.oninput = () => {
+          this.updateControlValues();
+          this.queueRender();
+        };
+      });
+
+    this.downloadBtn.onclick = () => this.download();
+  }
+
+  setFilter(filter) {
+    this.currentFilter = filter;
+    this.filterValue.textContent = this.getFilterName(filter);
+    
+    // Update active button
+    this.filterButtons.forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.filter === filter) {
+        btn.classList.add('active');
+      }
+    });
+    
+    if (this.image) {
+      this.applyFilterToImage();
+      this.queueRender();
+    }
+  }
+
+  getFilterName(filter) {
+    const names = {
+      'none': 'None',
+      'grayscale': 'Black & White',
+      'sepia': 'Sepia',
+      'vintage': 'Vintage',
+      'cool': 'Cool',
+      'warm': 'Warm',
+      'high-contrast': 'High Contrast'
+    };
+    return names[filter] || filter;
+  }
+
+  applyFilterToImage() {
+    if (!this.image) return;
+    
+    // Create a temporary canvas for filtering
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    tempCanvas.width = this.image.width;
+    tempCanvas.height = this.image.height;
+    
+    // Draw original image
+    tempCtx.drawImage(this.image, 0, 0);
+    
+    // Get image data
+    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+    const data = imageData.data;
+    
+    // Apply filter
+    switch(this.currentFilter) {
+      case 'grayscale':
+        this.applyGrayscale(data);
+        break;
+      case 'sepia':
+        this.applySepia(data);
+        break;
+      case 'vintage':
+        this.applyVintage(data);
+        break;
+      case 'cool':
+        this.applyCool(data);
+        break;
+      case 'warm':
+        this.applyWarm(data);
+        break;
+      case 'high-contrast':
+        this.applyHighContrast(data);
+        break;
+      default:
+        // 'none' filter - use original image
+        this.filteredImage = this.image;
+        return;
+    }
+    
+    // Put filtered data back
+    tempCtx.putImageData(imageData, 0, 0);
+    
+    // Create new image from filtered canvas
+    this.filteredImage = new Image();
+    this.filteredImage.src = tempCanvas.toDataURL();
+    
+    // Wait for image to load
+    this.filteredImage.onload = () => {
+      this.queueRender();
+    };
+  }
+
+  applyGrayscale(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      data[i] = avg;     // red
+      data[i + 1] = avg; // green
+      data[i + 2] = avg; // blue
+    }
+  }
+
+  applySepia(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
+      data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
+      data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+    }
+  }
+
+  applyVintage(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      // Desaturate slightly
+      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      data[i] = avg * 0.7 + data[i] * 0.3;
+      data[i + 1] = avg * 0.7 + data[i + 1] * 0.3;
+      data[i + 2] = avg * 0.7 + data[i + 2] * 0.3;
+      
+      // Add sepia tint
+      data[i] = Math.min(255, data[i] * 1.1);
+      data[i + 1] = Math.min(255, data[i + 1] * 0.9);
+      data[i + 2] = Math.min(255, data[i + 2] * 0.8);
+      
+      // Reduce contrast slightly
+      const contrast = 0.9;
+      data[i] = ((data[i] - 128) * contrast) + 128;
+      data[i + 1] = ((data[i + 1] - 128) * contrast) + 128;
+      data[i + 2] = ((data[i + 2] - 128) * contrast) + 128;
+    }
+  }
+
+  applyCool(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      // Increase blue, decrease red
+      data[i] = Math.max(0, data[i] * 0.9);      // Reduce red
+      data[i + 2] = Math.min(255, data[i + 2] * 1.1); // Increase blue
+    }
+  }
+
+  applyWarm(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      // Increase red and yellow, decrease blue
+      data[i] = Math.min(255, data[i] * 1.1);    // Increase red
+      data[i + 1] = Math.min(255, data[i + 1] * 1.05); // Slight green increase
+      data[i + 2] = Math.max(0, data[i + 2] * 0.9);   // Decrease blue
+    }
+  }
+
+  applyHighContrast(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      // Increase contrast
+      const contrast = 1.5;
+      data[i] = ((data[i] - 128) * contrast) + 128;
+      data[i + 1] = ((data[i + 1] - 128) * contrast) + 128;
+      data[i + 2] = ((data[i + 2] - 128) * contrast) + 128;
+      
+      // Clamp values to 0-255
+      data[i] = Math.max(0, Math.min(255, data[i]));
+      data[i + 1] = Math.max(0, Math.min(255, data[i + 1]));
+      data[i + 2] = Math.max(0, Math.min(255, data[i + 2]));
+    }
+  }
+
+  updateControlValues() {
+    this.fontFamilyValue.textContent = this.fontFamilyEl.value.split(" (")[0];
+    this.fontScaleValue.textContent = parseFloat(this.fontScaleEl.value).toFixed(2);
+    this.lineSpacingValue.textContent = parseFloat(this.lineSpacingEl.value).toFixed(2);
+    this.borderSizeValue.textContent = `${Math.round(parseFloat(this.borderSizeEl.value) * 100)}%`;
+    this.borderColorValue.textContent = this.borderColorEl.value.toUpperCase();
+    this.textColorValue.textContent = this.textColorEl.value.toUpperCase();
+  }
+
+  updateFontPreview() {
+    const fontName = this.fontFamilyEl.value.split(" (")[0];
+    this.fontPreview.textContent = `Preview: ${fontName} font`;
+    this.fontPreview.style.fontFamily = `'${fontName}', sans-serif`;
+  }
+
+  updateOrientationIndicator() {
+    if (this.isPortrait) {
+      this.orientationIndicator.textContent = "Portrait";
+      this.orientationIndicator.style.display = "inline-block";
+      this.canvasContainer.classList.add("portrait-preview");
+    } else {
+      this.orientationIndicator.textContent = "Landscape";
+      this.orientationIndicator.style.display = "inline-block";
+      this.canvasContainer.classList.remove("portrait-preview");
+    }
+  }
+
+  loadImage(file) {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = () => {
+      this.image = img;
+      this.filteredImage = img; // Start with original
+      
+      // Check if image is portrait (height > width)
+      this.isPortrait = img.height > img.width;
+      this.updateOrientationIndicator();
+      
+      EXIF.getData(img, () => {
+        this.exif = {
+          make: EXIF.getTag(img, "Make"),
+          model: EXIF.getTag(img, "Model"),
+          focal: EXIF.getTag(img, "FocalLength"),
+          aperture: EXIF.getTag(img, "FNumber"),
+          shutter: EXIF.getTag(img, "ExposureTime"),
+          iso: EXIF.getTag(img, "ISOSpeedRatings")
+        };
+        this.queueRender();
+        this.downloadBtn.disabled = false;
+      });
+    };
+  }
+
+  queueRender() {
+    if (this.renderQueued) return;
+    this.renderQueued = true;
+    requestAnimationFrame(() => {
+      this.renderQueued = false;
+      this.render(this.previewCtx, this.previewCanvas, true);
+    });
+  }
+
+  render(ctx, canvas, preview) {
+    if (!this.image || !this.exif) return;
+
+    // Use filtered image if available, otherwise use original
+    const imageToDraw = this.filteredImage || this.image;
+
+    // Adjust preview scale based on orientation
+    let scale;
+    if (preview) {
+      if (this.isPortrait) {
+        scale = Math.min(1, 480 / this.image.width);
+      } else {
+        scale = Math.min(1, 680 / this.image.width);
+      }
+    } else {
+      scale = 1; // Full resolution for download
+    }
+
+    const imgW = this.image.width * scale;
+    const imgH = this.image.height * scale;
+
+    const borderRatio = +this.borderSizeEl.value;
+    const side = imgW * borderRatio;
+    
+    // FIXED: Calculate bottom border based on EXIF visibility AND orientation
+    // For portrait images, we need more space for text to prevent cutting
+    let bottom;
+    if (this.showExif) {
+      // When showing EXIF, use more space for portrait to accommodate text
+      bottom = imgH * borderRatio * (this.isPortrait ? 5.5 : 4.5);
+    } else {
+      // When hiding EXIF, use less space
+      bottom = imgH * borderRatio * (this.isPortrait ? 3.0 : 2.5);
+    }
+
+    canvas.width = imgW + side * 2;
+    canvas.height = imgH + side + bottom;
+
+    ctx.fillStyle = this.borderColorEl.value;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw the (possibly filtered) image
+    ctx.drawImage(imageToDraw, side, side, imgW, imgH);
+
+    const fontFamily = this.fontFamilyEl.value.split(" (")[0];
+    const titleSize = Math.max(26 * scale, canvas.width / 48) * +this.fontScaleEl.value;
+    const metaSize = titleSize * 0.75;
+    const lineSpacing = +this.lineSpacingEl.value;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = this.textColorEl.value;
+
+    // "Shot on" text - REGULAR weight (400)
+    ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+    const shotOnText = "Shot on ";
+    const shotOnWidth = ctx.measureText(shotOnText).width;
+    
+    // Camera brand/model - BOLD weight (700)
+    const cameraText = `${[this.exif.make, this.exif.model].filter(Boolean).join(" ") || "Unknown Camera"}`;
+    
+    // Calculate total width and starting position
+    ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+    const cameraWidth = ctx.measureText(cameraText).width;
+    
+    const totalWidth = shotOnWidth + cameraWidth;
+    const startX = (canvas.width - totalWidth) / 2;
+    
+    // FIXED: Calculate positions based on EXIF visibility and orientation
+    let titleY;
+    if (this.showExif) {
+      // When showing EXIF, position text higher to make room for EXIF data
+      titleY = imgH + side + bottom * (this.isPortrait ? 0.30 : 0.35);
+    } else {
+      // When hiding EXIF, center text in the border area
+      titleY = imgH + side + bottom * 0.5;
+    }
+    
+    // Draw "Shot on" (regular weight)
+    ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+    ctx.fillText(shotOnText, startX + shotOnWidth/2, titleY);
+    
+    // Draw camera brand/model (bold weight)
+    ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+    ctx.fillText(cameraText, startX + shotOnWidth + cameraWidth/2, titleY);
+
+    // EXIF details - only if enabled
+    if (this.showExif) {
+      const metaY = titleY + (titleSize * lineSpacing);
+      ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(
+        `${this.exif.focal ? Math.round(this.exif.focal) + "mm" : ""}  ` +
+        `${this.exif.aperture ? "f/" + this.exif.aperture : ""}  ` +
+        `${this.exif.shutter < 1 ? "1/" + Math.round(1 / this.exif.shutter) : this.exif.shutter}s  ` +
+        `${this.exif.iso ? "ISO" + this.exif.iso : ""}`,
+        canvas.width / 2,
+        metaY + (metaSize * 0.5)
+      );
+    }
+  }
+
+  download() {
+    this.render(this.exportCtx, this.exportCanvas, false);
+    const a = document.createElement("a");
+    a.download = `exif-border-${new Date().getTime()}.jpg`;
+    a.href = this.exportCanvas.toDataURL("image/jpeg", 0.98);
+    a.click();
+  }
+}
+
+new EXIFBorderApp();
+</script>
+
+</body>
+</html>
