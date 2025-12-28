@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EXIF Border Generator</title>
+<link rel="manifest" href="manifest.json">
 <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Poppins:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;500;700&family=Raleway:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* Disable text selection and cursor */
 * {
@@ -39,8 +40,8 @@ canvas:focus, div:focus, span:focus {
   --accent: #e2e8f0;
   --primary: #000000;
   --primary-light: #eff6ff;
-  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-  --radius: 16px;
+  --shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+  --radius: 12px;
   --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -83,26 +84,10 @@ header {
 
 h1 {
   font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.025em;
   margin: 0;
-  background: linear-gradient(135deg, var(--primary) 0%, #929292 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  position: relative;
-  display: inline-block;
-}
-
-h1::after {
-  content: '';
-  position: absolute;
-  width: 40%;
-  height: 4px;
-  bottom: -6px;
-  left: 0;
-  background: linear-gradient(90deg, var(--primary)0%, #000000 100%);
-  border-radius: 2px;
+  color: var(--text);
 }
 
 .theme-toggle {
@@ -143,14 +128,13 @@ h1::after {
 .card {
   background: var(--card);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: none;
   padding: 2.5rem;
   transition: var(--transition);
-  border: 1px solid transparent;
 }
 
 .card:hover {
-  border-color: var(--primary-light);
+  border-color: transparent;
 }
 
 .upload-area {
@@ -166,20 +150,7 @@ h1::after {
   background: var(--primary-light);
 }
 
-.upload-area::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.05), transparent);
-  transition: left 0.6s ease;
-}
 
-.upload-area:hover::before {
-  left: 100%;
-}
 
 .upload-area:hover {
   border-color: var(--primary);
@@ -388,8 +359,12 @@ select:focus {
 }
 
 .filter-btn.active {
-  background: var(--primary);
-  color: rgb(0, 0, 0);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.instagram-ratio {
+  margin-top: 0.75rem;
 }
 
 .preview-wrap {
@@ -415,7 +390,7 @@ select:focus {
 }
 
 .canvas-container.no-exif {
-  max-height: none; /* Remove fixed height to prevent cutting */
+  max-height: none;
 }
 
 .canvas-container::after {
@@ -437,7 +412,6 @@ canvas {
   background: #f1f5f9;
 }
 
-/* SIMPLIFIED DOWNLOAD BUTTON */
 .download-btn {
   display: block;
   margin: 0 auto;
@@ -472,7 +446,6 @@ canvas {
   box-shadow: none;
 }
 
-/* Light mode specific button styles */
 [data-theme="light"] .download-btn {
   background: #000000;
   color: #ffffff;
@@ -484,16 +457,16 @@ canvas {
   border-color: #333333;
 }
 
-/* Dark mode specific button styles */
 [data-theme="dark"] .download-btn {
-  background: #ffffff;
-  color: #000000;
-  border: 1px solid #ffffff;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--accent);
 }
 
 [data-theme="dark"] .download-btn:hover {
   background: #e0e0e0;
   border-color: #e0e0e0;
+  color: #000000;
 }
 
 footer {
@@ -503,7 +476,6 @@ footer {
   font-size: 0.875rem;
 }
 
-/* Font preview styling */
 .font-preview {
   font-size: 0.875rem;
   margin-top: 0.25rem;
@@ -511,7 +483,6 @@ footer {
   font-style: italic;
 }
 
-/* Image orientation indicator */
 .orientation-indicator {
   display: inline-block;
   padding: 0.25rem 0.75rem;
@@ -524,7 +495,23 @@ footer {
   transition: var(--transition);
 }
 
-/* Responsive adjustments */
+.ratio-indicator {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.instagram-option {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
 @media (max-width: 768px) {
   .wrapper {
     padding: 1.5rem 1rem;
@@ -623,6 +610,23 @@ footer {
   </div>
 
   <div class="controls-grid">
+    <!-- Instagram Size Control (NEW) -->
+    <div class="control-group">
+      <div class="control-label">
+        <div class="toggle-label">
+          <span>Instagram Mode</span>
+          <span id="instagramRatioValue" class="ratio-indicator" style="display: none;">4:5</span>
+        </div>
+        <div class="toggle-switch" id="instagramToggle"></div>
+      </div>
+      <select id="instagramRatio" class="instagram-ratio" disabled>
+        <option value="4:5">Portrait (4:5)</option>
+        <option value="1:1">Square (1:1)</option>
+        <option value="1.91:1">Landscape (1.91:1)</option>
+      </select>
+      <div class="instagram-option">Adds top/bottom borders with Instagram aspect ratios</div>
+    </div>
+
     <div class="control-group">
       <div class="control-label">
         <span>Font Family <span id="orientationIndicator" class="orientation-indicator" style="display: none;">Portrait</span></span>
@@ -652,8 +656,7 @@ footer {
         <div class="toggle-label">
           <span>Show EXIF Data</span>
         </div>
-        <div class="toggle-switch active" id="exifToggle">
-        </div>
+        <div class="toggle-switch active" id="exifToggle"></div>
       </div>
       <div style="font-size: 0.75rem; color: var(--muted);">Toggle to show/hide camera settings</div>
     </div>
@@ -685,9 +688,9 @@ footer {
     <div class="control-group">
       <div class="control-label">
         <span>Line Spacing</span>
-        <span class="control-value" id="lineSpacingValue">0.65</span>
+        <span class="control-value" id="lineSpacingValue">1.2</span>
       </div>
-      <input type="range" id="lineSpacing" min="0.5" max="1.0" step="0.05" value="0.65">
+      <input type="range" id="lineSpacing" min="0.8" max="2.0" step="0.05" value="1.2">
     </div>
 
     <div class="control-group">
@@ -744,6 +747,11 @@ class EXIFBorderApp {
     this.filterValue = document.getElementById("filterValue");
     this.filterButtons = document.querySelectorAll('.filter-btn');
 
+    // Instagram controls
+    this.instagramToggle = document.getElementById("instagramToggle");
+    this.instagramRatioEl = document.getElementById("instagramRatio");
+    this.instagramRatioValue = document.getElementById("instagramRatioValue");
+
     this.exportCanvas = document.createElement("canvas");
     this.exportCtx = this.exportCanvas.getContext("2d");
 
@@ -774,6 +782,10 @@ class EXIFBorderApp {
     this.isPortrait = false;
     this.showExif = true;
     this.currentFilter = 'none';
+    
+    // Instagram mode
+    this.instagramMode = false;
+    this.instagramRatio = "4:5";
 
     this.initUpload();
     this.bindControls();
@@ -825,6 +837,28 @@ class EXIFBorderApp {
       this.queueRender();
     };
 
+    // Instagram toggle
+    this.instagramToggle.onclick = () => {
+      this.instagramMode = !this.instagramMode;
+      this.instagramToggle.classList.toggle("active");
+      this.instagramRatioEl.disabled = !this.instagramMode;
+      
+      if (this.instagramMode) {
+        this.instagramRatioValue.textContent = this.instagramRatio;
+        this.instagramRatioValue.style.display = "inline-block";
+      } else {
+        this.instagramRatioValue.style.display = "none";
+      }
+      
+      this.queueRender();
+    };
+
+    this.instagramRatioEl.onchange = () => {
+      this.instagramRatio = this.instagramRatioEl.value;
+      this.instagramRatioValue.textContent = this.instagramRatio;
+      this.queueRender();
+    };
+
     // Filter buttons
     this.filterButtons.forEach(btn => {
       btn.onclick = (e) => {
@@ -840,6 +874,7 @@ class EXIFBorderApp {
       this.queueRender();
     };
     
+    // Update all controls
     [this.fontScaleEl, this.lineSpacingEl, this.borderSizeEl, this.borderColorEl, this.textColorEl]
       .forEach(el => {
         el.oninput = () => {
@@ -849,6 +884,14 @@ class EXIFBorderApp {
       });
 
     this.downloadBtn.onclick = () => this.download();
+  }
+
+  getInstagramRatioValue() {
+    return {
+      "4:5": 4/5,
+      "1:1": 1,
+      "1.91:1": 1.91
+    }[this.instagramRatio];
   }
 
   setFilter(filter) {
@@ -941,9 +984,9 @@ class EXIFBorderApp {
   applyGrayscale(data) {
     for (let i = 0; i < data.length; i += 4) {
       const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-      data[i] = avg;     // red
-      data[i + 1] = avg; // green
-      data[i + 2] = avg; // blue
+      data[i] = avg;
+      data[i + 1] = avg;
+      data[i + 2] = avg;
     }
   }
 
@@ -960,19 +1003,16 @@ class EXIFBorderApp {
   }
 
   applyVintage(data) {
-    for (let i = 0; i < data.length; i += 4) {
-      // Desaturate slightly
+    for (let i = 0; i <data.length; i += 4) {
       const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
       data[i] = avg * 0.7 + data[i] * 0.3;
       data[i + 1] = avg * 0.7 + data[i + 1] * 0.3;
       data[i + 2] = avg * 0.7 + data[i + 2] * 0.3;
       
-      // Add sepia tint
       data[i] = Math.min(255, data[i] * 1.1);
       data[i + 1] = Math.min(255, data[i + 1] * 0.9);
       data[i + 2] = Math.min(255, data[i + 2] * 0.8);
       
-      // Reduce contrast slightly
       const contrast = 0.9;
       data[i] = ((data[i] - 128) * contrast) + 128;
       data[i + 1] = ((data[i + 1] - 128) * contrast) + 128;
@@ -982,30 +1022,26 @@ class EXIFBorderApp {
 
   applyCool(data) {
     for (let i = 0; i < data.length; i += 4) {
-      // Increase blue, decrease red
-      data[i] = Math.max(0, data[i] * 0.9);      // Reduce red
-      data[i + 2] = Math.min(255, data[i + 2] * 1.1); // Increase blue
+      data[i] = Math.max(0, data[i] * 0.9);
+      data[i + 2] = Math.min(255, data[i + 2] * 1.1);
     }
   }
 
   applyWarm(data) {
     for (let i = 0; i < data.length; i += 4) {
-      // Increase red and yellow, decrease blue
-      data[i] = Math.min(255, data[i] * 1.1);    // Increase red
-      data[i + 1] = Math.min(255, data[i + 1] * 1.05); // Slight green increase
-      data[i + 2] = Math.max(0, data[i + 2] * 0.9);   // Decrease blue
+      data[i] = Math.min(255, data[i] * 1.1);
+      data[i + 1] = Math.min(255, data[i + 1] * 1.05);
+      data[i + 2] = Math.max(0, data[i + 2] * 0.9);
     }
   }
 
   applyHighContrast(data) {
     for (let i = 0; i < data.length; i += 4) {
-      // Increase contrast
       const contrast = 1.5;
       data[i] = ((data[i] - 128) * contrast) + 128;
       data[i + 1] = ((data[i + 1] - 128) * contrast) + 128;
       data[i + 2] = ((data[i + 2] - 128) * contrast) + 128;
       
-      // Clamp values to 0-255
       data[i] = Math.max(0, Math.min(255, data[i]));
       data[i + 1] = Math.max(0, Math.min(255, data[i + 1]));
       data[i + 2] = Math.max(0, Math.min(255, data[i + 2]));
@@ -1045,9 +1081,8 @@ class EXIFBorderApp {
 
     img.onload = () => {
       this.image = img;
-      this.filteredImage = img; // Start with original
+      this.filteredImage = img;
       
-      // Check if image is portrait (height > width)
       this.isPortrait = img.height > img.width;
       this.updateOrientationIndicator();
       
@@ -1078,10 +1113,9 @@ class EXIFBorderApp {
   render(ctx, canvas, preview) {
     if (!this.image || !this.exif) return;
 
-    // Use filtered image if available, otherwise use original
     const imageToDraw = this.filteredImage || this.image;
 
-    // Adjust preview scale based on orientation
+    // Calculate scale for preview or full resolution
     let scale;
     if (preview) {
       if (this.isPortrait) {
@@ -1090,34 +1124,77 @@ class EXIFBorderApp {
         scale = Math.min(1, 680 / this.image.width);
       }
     } else {
-      scale = 1; // Full resolution for download
+      scale = 1;
     }
 
     const imgW = this.image.width * scale;
     const imgH = this.image.height * scale;
 
     const borderRatio = +this.borderSizeEl.value;
-    const side = imgW * borderRatio;
     
-    // FIXED: Calculate bottom border based on EXIF visibility AND orientation
-    // For portrait images, we need more space for text to prevent cutting
-    let bottom;
-    if (this.showExif) {
-      // When showing EXIF, use more space for portrait to accommodate text
-      bottom = imgH * borderRatio * (this.isPortrait ? 5.5 : 4.5);
+    // FIXED: Instagram mode now has balanced borders
+    let side, top, bottom;
+    if (this.instagramMode) {
+      // Instagram mode: Balanced top and bottom borders
+      side = imgW * borderRatio * 0.5; // Smaller side borders
+      top = imgH * borderRatio * 1.5; // Larger top border for better centering
+      
+      if (this.showExif) {
+        // Instagram mode with EXIF - larger bottom border
+        bottom = imgH * borderRatio * 4.0;
+      } else {
+        // Instagram mode without EXIF - smaller bottom border
+        bottom = imgH * borderRatio * 2.5;
+      }
     } else {
-      // When hiding EXIF, use less space
-      bottom = imgH * borderRatio * (this.isPortrait ? 3.0 : 2.5);
+      // Normal mode: use border settings
+      side = imgW * borderRatio;
+      top = imgW * borderRatio;
+      
+      if (this.showExif) {
+        bottom = imgH * borderRatio * (this.isPortrait ? 5.0 : 4.0);
+      } else {
+        bottom = imgH * borderRatio * (this.isPortrait ? 2.5 : 2.0);
+      }
     }
 
-    canvas.width = imgW + side * 2;
-    canvas.height = imgH + side + bottom;
+    // Base content dimensions
+    const contentWidth = imgW + side * 2;
+    const contentHeight = imgH + top + bottom;
 
+    let canvasW = contentWidth;
+    let canvasH = contentHeight;
+    let contentX = side;
+    let contentY = top;
+
+    // Apply Instagram padding if needed
+    if (this.instagramMode) {
+      const targetRatio = this.getInstagramRatioValue();
+      const contentRatio = contentWidth / contentHeight;
+      
+      if (contentRatio > targetRatio) {
+        // Content is wider than target - add vertical padding
+        canvasH = contentWidth / targetRatio;
+        const paddingY = (canvasH - contentHeight) / 2;
+        contentY = top + paddingY;
+      } else if (contentRatio < targetRatio) {
+        // Content is taller than target - add horizontal padding
+        canvasW = contentHeight * targetRatio;
+        const paddingX = (canvasW - contentWidth) / 2;
+        contentX = side + paddingX;
+      }
+      // If equal ratio, no padding needed
+    }
+
+    canvas.width = canvasW;
+    canvas.height = canvasH;
+
+    // Fill background
     ctx.fillStyle = this.borderColorEl.value;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw the (possibly filtered) image
-    ctx.drawImage(imageToDraw, side, side, imgW, imgH);
+    ctx.fillRect(0, 0, canvasW, canvasH);
+
+    // Draw the image
+    ctx.drawImage(imageToDraw, contentX, contentY, imgW, imgH);
 
     const fontFamily = this.fontFamilyEl.value.split(" (")[0];
     const titleSize = Math.max(26 * scale, canvas.width / 48) * +this.fontScaleEl.value;
@@ -1128,64 +1205,101 @@ class EXIFBorderApp {
     ctx.textBaseline = "middle";
     ctx.fillStyle = this.textColorEl.value;
 
-    // "Shot on" text - REGULAR weight (400)
-    ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
-    const shotOnText = "Shot on ";
-    const shotOnWidth = ctx.measureText(shotOnText).width;
+    // Calculate text positions
+    const textAreaTop = contentY + imgH;
+    const textAreaHeight = bottom;
     
-    // Camera brand/model - BOLD weight (700)
+    // Build camera text
     const cameraText = `${[this.exif.make, this.exif.model].filter(Boolean).join(" ") || "Unknown Camera"}`;
     
-    // Calculate total width and starting position
-    ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
-    const cameraWidth = ctx.measureText(cameraText).width;
-    
-    const totalWidth = shotOnWidth + cameraWidth;
-    const startX = (canvas.width - totalWidth) / 2;
-    
-    // FIXED: Calculate positions based on EXIF visibility and orientation
-    let titleY;
     if (this.showExif) {
-      // When showing EXIF, position text higher to make room for EXIF data
-      titleY = imgH + side + bottom * (this.isPortrait ? 0.30 : 0.35);
-    } else {
-      // When hiding EXIF, center text in the border area
-      titleY = imgH + side + bottom * 0.5;
-    }
-    
-    // Draw "Shot on" (regular weight)
-    ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
-    ctx.fillText(shotOnText, startX + shotOnWidth/2, titleY);
-    
-    // Draw camera brand/model (bold weight)
-    ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
-    ctx.fillText(cameraText, startX + shotOnWidth + cameraWidth/2, titleY);
-
-    // EXIF details - only if enabled
-    if (this.showExif) {
-      const metaY = titleY + (titleSize * lineSpacing);
+      // FIXED: Line spacing working properly
+      const titleY = textAreaTop + (textAreaHeight * 0.35);
+      // Line spacing affects distance between title and EXIF
+      const metaY = titleY + (titleSize * lineSpacing * 0.8);
+      
+      // Draw "Shot on Camera Brand" as a single line
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      const shotOnWidth = ctx.measureText("Shot on ").width;
+      const cameraWidth = ctx.measureText(cameraText).width;
+      
+      // Calculate total width and starting position
+      const totalWidth = shotOnWidth + cameraWidth;
+      const startX = contentX + (imgW / 2) - (totalWidth / 2);
+      
+      // Draw "Shot on" (regular weight)
+      ctx.fillText("Shot on ", startX + shotOnWidth/2, titleY);
+      
+      // Draw camera brand/model (bold weight)
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, startX + shotOnWidth + cameraWidth/2, titleY);
+      
+      // Draw EXIF data - centered
       ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
-      ctx.fillText(
-        `${this.exif.focal ? Math.round(this.exif.focal) + "mm" : ""}  ` +
-        `${this.exif.aperture ? "f/" + this.exif.aperture : ""}  ` +
-        `${this.exif.shutter < 1 ? "1/" + Math.round(1 / this.exif.shutter) : this.exif.shutter}s  ` +
-        `${this.exif.iso ? "ISO" + this.exif.iso : ""}`,
-        canvas.width / 2,
-        metaY + (metaSize * 0.5)
-      );
+      
+      // Build EXIF string
+      let exifString = "";
+      if (this.exif.focal) exifString += Math.round(this.exif.focal) + "mm  ";
+      if (this.exif.aperture) exifString += "f/" + this.exif.aperture + "  ";
+      if (this.exif.shutter) {
+        if (this.exif.shutter < 1) {
+          exifString += "1/" + Math.round(1 / this.exif.shutter) + "s  ";
+        } else {
+          exifString += this.exif.shutter + "s  ";
+        }
+      }
+      if (this.exif.iso) exifString += "ISO" + this.exif.iso;
+      
+      // Draw EXIF data
+      if (exifString.trim()) {
+        ctx.fillText(exifString.trim(), contentX + (imgW / 2), metaY);
+      }
+    } else {
+      // When hiding EXIF: Single line centered
+      const titleY = textAreaTop + (textAreaHeight / 2);
+      
+      // Draw "Shot on Camera Brand" as a single line
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      const shotOnWidth = ctx.measureText("Shot on ").width;
+      const cameraWidth = ctx.measureText(cameraText).width;
+      
+      // Calculate total width and starting position
+      const totalWidth = shotOnWidth + cameraWidth;
+      const startX = contentX + (imgW / 2) - (totalWidth / 2);
+      
+      // Draw "Shot on" (regular weight)
+      ctx.fillText("Shot on ", startX + shotOnWidth/2, titleY);
+      
+      // Draw camera brand/model (bold weight)
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, startX + shotOnWidth + cameraWidth/2, titleY);
     }
   }
 
   download() {
     this.render(this.exportCtx, this.exportCanvas, false);
     const a = document.createElement("a");
-    a.download = `exif-border-${new Date().getTime()}.jpg`;
+    const mode = this.instagramMode ? "instagram-" : "exif-border-";
+    a.download = `${mode}${new Date().getTime()}.jpg`;
     a.href = this.exportCanvas.toDataURL("image/jpeg", 0.98);
     a.click();
   }
 }
 
 new EXIFBorderApp();
+
+// Register service worker for offline functionality
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(registration => {
+        console.log('ServiceWorker registration successful');
+      })
+      .catch(err => {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+  });
+}
 </script>
 
 </body>
